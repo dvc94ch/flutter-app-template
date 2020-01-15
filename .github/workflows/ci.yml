@@ -7,10 +7,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        rust:
-        - version: stable
-        flutter:
-        - version: dev
+        toolchain:
+        - rust: stable
+          flutter: stable
+        - rust: nightly
+          flutter: dev
         platform:
         - target: x86_64-unknown-linux-gnu
           host: ubuntu-latest
@@ -18,6 +19,10 @@ jobs:
 
         - target: x86_64-apple-darwin
           host: macos-latest
+          cross: false
+
+        - target: x86_64-pc-windows-msvc
+          host: windows-latest
           cross: false
 
         - target: armv7-linux-androideabi
@@ -43,7 +48,6 @@ jobs:
     env:
       RUST_BACKTRACE: 1
       CARGO_INCREMENTAL: 0
-      FLUTTER_ENGINE_VERSION: a50f1ef56a05999bfa97a777cca14fd7a00e8454
       LLVM_CONFIG_PATH: /usr/local/opt/llvm/bin/llvm-config
       NDK_HOME: /usr/local/lib/android/sdk/ndk-bundle
 
@@ -56,7 +60,7 @@ jobs:
       uses: actions/cache@v1
       with:
         path: ~/.cargo
-        key: ${{ matrix.platform.target }}-cargo-${{ matrix.rust.version }}
+        key: ${{ matrix.platform.target }}-cargo-${{ matrix.toolchain.rust }}
 
     - name: Install dependencies ubuntu
       if: matrix.platform.host == 'ubuntu-latest'
@@ -66,16 +70,20 @@ jobs:
       if: matrix.platform.host == 'macos-latest'
       run: brew install llvm
 
+    - name: Install dependencies windows
+      if: matrix.platform.host == 'windows-latest'
+      run: choco install llvm
+
     - name: Install rust toolchain
       uses: hecrj/setup-rust-action@v1
       with:
-        rust-version: ${{ matrix.rust.version }}
+        rust-version: ${{ matrix.toolchain.rust }}
         targets: ${{ matrix.platform.target }}
 
     - name: Install flutter
       uses: subosito/flutter-action@v1
       with:
-        channel: ${{ matrix.flutter.version }}
+        channel: ${{ matrix.toolchain.flutter }}
 
     - name: Install cargo-flutter
       run: cargo install cargo-flutter --force
