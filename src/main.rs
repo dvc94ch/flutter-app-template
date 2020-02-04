@@ -1,5 +1,5 @@
 use flutter_winit::FlutterWindow;
-use glutin::window::WindowBuilder;
+use winit::window::WindowBuilder;
 use std::path::{Path, PathBuf};
 
 #[cfg(not(target_os = "android"))]
@@ -22,11 +22,8 @@ fn main() {
     }
 
     let window = WindowBuilder::new().with_title("Flutter App Demo");
-    let flutter = FlutterWindow::new(window, PathBuf::from(assets_dir)).unwrap();
-    let flutter = flutter.with_resource_context().unwrap();
-
+    let flutter = FlutterWindow::new(window, PathBuf::from(assets_dir), true).unwrap();
     flutter.start_engine(&args).unwrap();
-
     flutter.run();
 }
 
@@ -38,7 +35,6 @@ fn main() {
     use log::Level;
     use std::ffi::OsStr;
     use std::os::unix::ffi::OsStrExt;
-    use std::path::PathBuf;
 
     android_logger::init_once(
         Config::default()
@@ -75,10 +71,8 @@ fn main() {
     }
 
     let window = WindowBuilder::new().with_title("Flutter App Demo");
-    let flutter = FlutterWindow::new(window).unwrap();
-
-    flutter.start_engine(Path::new(&assets_dir), &args).unwrap();
-
+    let flutter = FlutterWindow::new(window, PathBuf::from(assets_dir), false).unwrap();
+    flutter.start_engine(&args).unwrap();
     flutter.run();
 }
 
